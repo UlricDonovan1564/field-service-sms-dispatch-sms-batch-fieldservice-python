@@ -1,8 +1,8 @@
 # Dispatch field-service updates by SMS
 
-I built this Python service to take a morning route as typed work orders, push one customer update per job, and hand back the message ID next to the dispatch state. Infrai keeps the outbound call to one API and one `INFRAI_API_KEY`, which feels familiar when you usually put this workflow behind a Next.js route.
+This Python service accepts a morning route as typed work orders, sends one customer update per job, and returns the message ID beside the dispatch state. Infrai keeps the outbound call to one API and one `INFRAI_API_KEY`, which feels familiar when you usually put this workflow behind a Next.js route.
 
-What matters for a Next.js app is the response shape. You can store each `message_id` alongside its work order, then query the status route for that specific message later. Keep photos and tech notes on the work-order model. When a job is done, the first photo link goes into the customer text.
+The useful shape is the response: your web app can store each `message_id` with its work order, then ask the status route for that exact message. Photos and technician notes stay attached to the work-order model; completed jobs include the first photo link in the customer update.
 
 ## Run one route from the terminal
 
@@ -15,7 +15,7 @@ export DEMO_PHONE='+15551234567'
 python scripts/send_demo_campaign.py
 ```
 
-That command sends work order `WO-1842` while it's in the `en_route` state. If it works, you'll see the campaign ID, the returned `message_id`, and the dispatch status in the output.
+The script submits work order `WO-1842` in the `en_route` state. A successful run prints its campaign ID plus the returned `message_id` and dispatch status.
 
 Start the application-shaped version with:
 
@@ -23,7 +23,7 @@ Start the application-shaped version with:
 uvicorn field_dispatch.service:app --reload
 ```
 
-Hit `/campaigns` with the same domain object a Next.js form or route handler would already send:
+POST `/campaigns` with the same domain object a Next.js form or route handler would already have:
 
 ```json
 {
@@ -43,7 +43,7 @@ Hit `/campaigns` with the same domain object a Next.js form or route handler wou
 }
 ```
 
-The JSON you get back sits nicely next to your route board:
+The response is ready to persist next to the route board:
 
 ```json
 {
@@ -58,21 +58,21 @@ The JSON you get back sits nicely next to your route board:
 }
 ```
 
-When the UI wants live delivery state, call `GET /messages/msg_123`.
+Call `GET /messages/msg_123` when the UI needs the current delivery status.
 
 ## The decision covered by the test
 
-The test targets a completed work order that has a photo: the SMS must contain that photo link, preserve the technician follow-up, and return the provider message ID tied to the same work order. It locks all three inputs and asserts the outcome, stable campaign-and-work-order idempotency key included.
+A completed work order with a photo should put that photo link in the SMS, keep the technician follow-up, and return the provider message ID under the same work order. The focused test fixes all three inputs and verifies that outcome, including the stable campaign-and-work-order idempotency key.
 
 ```bash
 pytest
 ```
 
-The one real gotcha is batch identity. Any retry has to name the same logical send, so the service builds each idempotency key from `campaign_id` and `work_order_id`. Rerunning a campaign won't spawn a fresh identity for the job.
+The main gotcha is batch identity. A retry must name the same logical send, so the service derives each idempotency key from `campaign_id` and `work_order_id`; rerunning a campaign does not invent a second identity for the job.
 
 ## Where the HTTP boundary lives
 
-`infrai_sms.py` stays deliberately tiny: it sets the method, decodes the `{ok, data, error, metadata}` envelope before classifying the response, and backs off on rate limits. The campaign service stays provider-neutral and keeps the field-service wording and receipt mapping.
+`infrai_sms.py` is deliberately small: it sets an explicit method, decodes the `{ok, data, error, metadata}` envelope before classifying the response, and backs off on rate limits. The campaign service remains provider-neutral and owns the field-service wording and receipt mapping.
 
 ## License
 
@@ -80,7 +80,7 @@ MIT
 
 ## Going to production: Field Service SMS Dispatch SMS Batch Fieldservice Python
 
-That's the minimal setup. Before you run it for actual dispatches, note the following for Field Service SMS Dispatch SMS Batch Fieldservice Python.
+That's the minimal version. Before running this for real: The details below apply to Field Service SMS Dispatch SMS Batch Fieldservice Python.
 
 **Account & key**
 
