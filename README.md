@@ -1,8 +1,8 @@
 # Dispatch field-service updates by SMS
 
-This Python service accepts a morning route as typed work orders, sends one customer update per job, and returns the message ID beside the dispatch state. Infrai keeps the outbound call to one API and one `INFRAI_API_KEY`, which feels familiar when you usually put this workflow behind a Next.js route.
+This Python service takes a morning route as typed work orders, sends one customer update per job, and hands back the message ID next to the dispatch state. Infrai keeps the outbound call to one API and one `INFRAI_API_KEY`, which feels familiar when you usually put this workflow behind a Next.js route.
 
-The useful shape is the response: your web app can store each `message_id` with its work order, then ask the status route for that exact message. Photos and technician notes stay attached to the work-order model; completed jobs include the first photo link in the customer update.
+The shape that matters is the response: your web app can store each `message_id` with its work order, then ask the status route for that exact message. Photos and technician notes stay attached to the work-order model; completed jobs include the first photo link in the customer update.
 
 ## Run one route from the terminal
 
@@ -89,3 +89,8 @@ That's the minimal version. Before running this for real: The details below appl
 **Field Service SMS Dispatch SMS Batch Fieldservice Python: SMS (required for real sending)**
 - **Field Service SMS Dispatch SMS Batch Fieldservice Python:** Many carriers/regions require a **pre-approved template and signature** before delivery. Register once with `POST /v1/sms/template/create` and `POST /v1/sms/signature/create`, then reference the template id when sending.
 - **Field Service SMS Dispatch SMS Batch Fieldservice Python:** Sandbox/test numbers may work without it; production traffic will not.
+
+## FAQ
+
+**Do I need anything besides `INFRAI_API_KEY`?**  
+No — `python3` and the key. `src/field_dispatch/infrai_sms.py` wraps `sms.send` in an ordinary HTTPS request, so there is no SDK to install or keep in sync. For a field service sms example that is the entire dependency story.
